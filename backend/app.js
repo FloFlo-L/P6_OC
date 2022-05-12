@@ -1,7 +1,9 @@
 const express = require('express');//importer express
 const mongoose = require('mongoose');//importer mongoose
+const path = require('path');
 
-const userRoutes = require('./routes/user')
+const userRoutes = require('./routes/user');
+const sauceRoutes = require('./routes/sauce');
 
 const app = express();//appeler méthode express pour créer une application
 
@@ -9,19 +11,21 @@ const app = express();//appeler méthode express pour créer une application
 // et met à disposition leur  body  directement sur l'objet req
 app.use(express.json());
 
-mongoose.connect('mongodb+srv://Florian123:098POI@cluster0.s012r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+mongoose.connect('',//lien mongoDB
 { useNewUrlParser: true,
 useUnifiedTopology: true })
 .then(() => console.log('Connexion à MongoDB réussie !'))
 .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Origin', '*');//Autorise l'accès à l'API pour n'importe quelle origine
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');//Définit les Headers utilisé par l'API
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');//méthodes possible à utiliser
     next();
 });
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use('/api/auth', userRoutes);
+app.use('/api/sauces', sauceRoutes);
 
 module.exports = app;//exporter application
