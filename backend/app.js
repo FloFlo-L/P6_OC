@@ -11,7 +11,7 @@ const app = express();//appeler méthode express pour créer une application
 // et met à disposition leur  body  directement sur l'objet req
 app.use(express.json());
 
-mongoose.connect('',//lien mongoDB
+mongoose.connect('mongodb+srv://Florian123:098POI@cluster0.s012r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',//lien mongoDB
 { useNewUrlParser: true,
 useUnifiedTopology: true })
 .then(() => console.log('Connexion à MongoDB réussie !'))
