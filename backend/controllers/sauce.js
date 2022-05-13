@@ -1,4 +1,5 @@
 const sauceModel = require('../models/sauce');//importer model shema sauce
+const fs = require('fs');//file system, permet d'avoir accès à tout les opérations liés au FS
 
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
@@ -27,12 +28,18 @@ exports.modifySauce = (req, res, next) => {
         .catch(error => res.status(400).json({ error }));
 };
 
-exports.deleteSauce = (req, res, next) =>{
-    sauceModel.deleteOne({ _id: req.params.id })//supprimer 
-        .then(() => res.status(200).json({ message: 'Sauce supprimée !'}))
-        .catch(error => res.status(400).json({ error }));
-        console.log('Sauce supprimée');
-};
+exports.deleteSauce = (req, res, next) => {
+    sauceModel.findOne({ _id: req.params.id })
+      .then(sauce=> {
+        const filename = sauce.imageUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {//supprimer fichier
+          sauceModel.deleteOne({ _id: req.params.id })
+            .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
+            .catch(error => res.status(400).json({ error }));
+        });
+      })
+      .catch(error => res.status(500).json({ error }));
+  };
 
 exports.getOneSauce = (req, res, next) => {
     sauceModel.findOne({ _id: req.params.id })//méthode findOne() dans notre modèle sauce pour trouver le sauce unique ayant le même _id que le paramètre de la requête
@@ -49,28 +56,24 @@ exports.getAllSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-    if (req.body.like == 1) {
-        sauceModel.updateOne(
-            {_id: req.params.id},
-            {$inc: {like: +1}},
-            {usersLiked: req.body.userId}         
-        )
-    
-        .then(() => res.status(200).json({ message: 'Sauce likée !'}))
-        .catch(error => res.status(400).json({ error }));
-        console.log('Sauce likée');
-    }
 
-    if (req.body.like == -1) {
+switch (req.body.like) {
+    case 1 :
         sauceModel.updateOne(
-            {_id: req.params.id},
-            {$inc: {dislike: +1}},
-            {usersDisliked: req.body.userId}       
-        )
-    
-        .then(() => res.status(200).json({ message: 'Sauce dislikée !'}))
-        .catch(error => res.status(400).json({ error }));
-        console.log('Sauce dislikée');
-    }
-    
-}
+            { _id: req.params.id },
+            { $push: {  usersLiked: req.body.userId  },//https://www.mongodb.com/docs/manual/reference/operator/update/push/
+              $inc: { like: +1 }})//https://www.mongodb.com/docs/manual/reference/operator/update/inc/
+        .then(() => res.status(200).json({ message: 'Sauce likée !' }))
+        .catch((error) => res.status(400).json({ error }))
+    break;
+
+    case -1 :
+        sauceModel.updateOne(
+            { _id: req.params.id },
+            { $push: {  usersLiked: req.body.userId  },
+              $inc: { dislike: +1 }})
+        .then(() => res.status(200).json({ message: 'Sauce dislikée !' }))
+        .catch((error) => res.status(400).json({ error }))
+    break;
+
+}}
