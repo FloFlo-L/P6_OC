@@ -1,3 +1,5 @@
+# Florian Lescribaa Projet 6 OpenClassrooms
+
 ***Projet 6*** du cursus **Développeur Web d'Openclassrooms**.
 
 Il s'agit de **Hot Takes** : une applications de notations de critique de sauces piquantes !
