@@ -9,8 +9,8 @@ exports.createSauce = (req, res, next) => {
        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
        like: 0,
        dislike: 0,
-    //    usersLiked: [' '],
-    //    usersdisLiked: [' '],
+       usersLiked: [' '],
+       usersdisLiked: [' '],
        // req.protocol pour obtenir le premier segment (dans notre cas 'http' ).
        // req.get('host') pour résoudre l'hôte du serveur (ici, 'localhost:3000' ).
        // '/images/' et le nom de fichier pour compléter notre URL.
