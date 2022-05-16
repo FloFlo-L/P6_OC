@@ -7,6 +7,10 @@ exports.createSauce = (req, res, next) => {
     const sauce = new sauceModel({
        ...sauceObject,
        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+       like: 0,
+       dislike: 0,
+    //    usersLiked: [' '],
+    //    usersdisLiked: [' '],
        // req.protocol pour obtenir le premier segment (dans notre cas 'http' ).
        // req.get('host') pour résoudre l'hôte du serveur (ici, 'localhost:3000' ).
        // '/images/' et le nom de fichier pour compléter notre URL.
@@ -26,6 +30,7 @@ exports.modifySauce = (req, res, next) => {
     sauceModel.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })//utilisons aussi le paramètre id passé dans la demande, et le remplaçons par le Thing passé comme second argument
         .then(() => res.status(200).json({ message: 'Sauce modifiée !'}))
         .catch(error => res.status(400).json({ error }));
+        console.log('Modif fait');
 };
 
 exports.deleteSauce = (req, res, next) => {
@@ -57,23 +62,51 @@ exports.getAllSauce = (req, res, next) => {
 
 exports.likeSauce = (req, res, next) => {
 
-switch (req.body.like) {
-    case 1 :
-        sauceModel.updateOne(
-            { _id: req.params.id },
-            { $push: {  usersLiked: req.body.userId  },//https://www.mongodb.com/docs/manual/reference/operator/update/push/
-              $inc: { like: +1 }})//https://www.mongodb.com/docs/manual/reference/operator/update/inc/
-        .then(() => res.status(200).json({ message: 'Sauce likée !' }))
-        .catch((error) => res.status(400).json({ error }))
-    break;
+    switch (req.body.like) {
+        case 1 :
+            sauceModel.updateOne(
+                { _id: req.params.id },
+                { $push: {  usersLiked: req.body.userId  },//https://www.mongodb.com/docs/manual/reference/operator/update/push/
+                $inc: { like: +1 }})//https://www.mongodb.com/docs/manual/reference/operator/update/inc/
+            .then(() => res.status(200).json({ message: 'Sauce likée !' }))
+            .catch((error) => res.status(400).json({ error }))
+        break;
 
-    case -1 :
-        sauceModel.updateOne(
-            { _id: req.params.id },
-            { $push: {  usersLiked: req.body.userId  },
-              $inc: { dislike: +1 }})
-        .then(() => res.status(200).json({ message: 'Sauce dislikée !' }))
-        .catch((error) => res.status(400).json({ error }))
-    break;
+        case 0 :
+            sauceModel.findOne({ _id: req.params.id })
+            .then((sauce) => {
+                if (sauce.usersLiked.includes(req.body.userId)) { 
+                sauceModel.updateOne(
+                    { _id: req.params.id},
+                    { $pull: { usersLiked: req.body.userId },//https://www.mongodb.com/docs/manual/reference/operator/update/pull/
+                    $inc: { like: -1 }})
+                .then(() => res.status(200).json({ message: `Like non selectionné` }))
+                .catch((error) => res.status(400).json({ error }))
+                }
+                if (sauce.usersDisliked.includes(req.body.userId)) { 
+                sauceModel.updateOne(
+                    { _id: req.params.id },
+                    { $pull: { usersDisliked: req.body.userId },
+                    $inc: { dislike: -1 }})
+                .then(() => res.status(200).json({ message: `Dislike non selectionné` }))
+                .catch((error) => res.status(400).json({ error }))
+                }
+            })
+            .catch((error) => res.status(404).json({ error }))
+        break;
 
-}}
+        case -1 :
+            sauceModel.updateOne(
+                { _id: req.params.id },
+                { $push: {  usersDisliked: req.body.userId  },
+                $inc: { dislike: +1 }})
+            .then(() => res.status(200).json({ message: 'Sauce dislikée !' }))
+            .catch((error) => res.status(400).json({ error }))
+        break;
+
+
+        default:
+        console.log(error);
+
+    }
+}
