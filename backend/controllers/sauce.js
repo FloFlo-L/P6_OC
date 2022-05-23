@@ -7,10 +7,6 @@ exports.createSauce = (req, res, next) => {
     const sauce = new sauceModel({
        ...sauceObject,
        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-       like: 0,
-       dislike: 0,
-       usersLiked: [' '],
-       usersdisLiked: [' '],
        // req.protocol pour obtenir le premier segment (dans notre cas 'http' ).
        // req.get('host') pour résoudre l'hôte du serveur (ici, 'localhost:3000' ).
        // '/images/' et le nom de fichier pour compléter notre URL.
@@ -54,7 +50,7 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.getAllSauce = (req, res, next) => {
-    sauceModel.find()//renvoyer un tableau contenant tous les Things dans notre base de données.
+    sauceModel.find()//renvoyer un tableau contenant toutes les sauces dans notre base de données.
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({ error }));
         console.log('Liste Sauce');
@@ -67,7 +63,7 @@ exports.likeSauce = (req, res, next) => {
             sauceModel.updateOne(
                 { _id: req.params.id },
                 { $push: {  usersLiked: req.body.userId  },//https://www.mongodb.com/docs/manual/reference/operator/update/push/
-                $inc: { like: +1 }})//https://www.mongodb.com/docs/manual/reference/operator/update/inc/
+                $inc: { likes: +1 }})//https://www.mongodb.com/docs/manual/reference/operator/update/inc/
             .then(() => res.status(200).json({ message: 'Sauce likée !' }))
             .catch((error) => res.status(400).json({ error }))
         break;
@@ -79,7 +75,7 @@ exports.likeSauce = (req, res, next) => {
                 sauceModel.updateOne(
                     { _id: req.params.id},
                     { $pull: { usersLiked: req.body.userId },//https://www.mongodb.com/docs/manual/reference/operator/update/pull/
-                    $inc: { like: -1 }})
+                    $inc: { likes: -1 }})
                 .then(() => res.status(200).json({ message: `Like non selectionné` }))
                 .catch((error) => res.status(400).json({ error }))
                 }
@@ -87,7 +83,7 @@ exports.likeSauce = (req, res, next) => {
                 sauceModel.updateOne(
                     { _id: req.params.id },
                     { $pull: { usersDisliked: req.body.userId },
-                    $inc: { dislike: -1 }})
+                    $inc: { dislikes: -1 }})
                 .then(() => res.status(200).json({ message: `Dislike non selectionné` }))
                 .catch((error) => res.status(400).json({ error }))
                 }
@@ -99,7 +95,7 @@ exports.likeSauce = (req, res, next) => {
             sauceModel.updateOne(
                 { _id: req.params.id },
                 { $push: {  usersDisliked: req.body.userId  },
-                $inc: { dislike: +1 }})
+                $inc: { dislikes: +1 }})
             .then(() => res.status(200).json({ message: 'Sauce dislikée !' }))
             .catch((error) => res.status(400).json({ error }))
         break;
