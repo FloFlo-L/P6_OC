@@ -9,7 +9,7 @@ const sauceRoutes = require('./routes/sauce');
 
 const app = express();//appeler méthode express pour créer une application
 
-// app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({policy : "same-site"}));
 https://helmetjs.github.io/ https://connect.ed-diamond.com/MISC/misc-101/vos-entetes-https-avec-helmet
 
 mongoose.connect('mongodb+srv://Florian123:098POI@cluster0.s012r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',//lien mongoDB
